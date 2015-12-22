@@ -62,4 +62,23 @@ Kind of a rubbish model, but it confirms that the general trend is for emissions
 Now we're going to focus our attention specifically on Baltimore.  Have emissions dropped there?  We'll just redo the earlier code but limited to Baltimore.
 ``` {r}
 BaltByYear <- pm_data %>% group_by(year,fips) %>% summarize(total = sum(Emissions)) %>% filter(fips=='24510')
+par(mar=c(4,4,2,0))
+png('plot2.png')
+barplot(BaltByYear$total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue')
+dev.off()
 ```
+
+It looks like emissions have dropped overall from 1999 to 2008, but there was a spike back up in 2005 before the drop to 2008.
+
+## Question 3: Which Sources Have Changed?
+Getting into Baltimore more specifically, let's break it down by pollution source.  Which have declines across the years?  We're supposed to use ggplot for this one.
+``` {r}
+baltimore <- pm_data %>% filter(fips=='24510')
+baltGrouped <- baltimore %>% group_by(year,type) %>% summarize(total=sum(Emissions))
+g <- ggplot(baltGrouped,aes(as.factor(year),total,group=type,color=type))
+g+geom_line()+labs(x='Year',y='Total PM2.5 Emissions',title='Emissions in Baltimore Over Time by Type')
+dev.copy(png,file='plot3.png')
+dev.off()
+```
+
+It looks like each type has declined overall except for point, which increased but then dropped back to about 1999 levels.
