@@ -31,8 +31,8 @@ library(dplyr)
 pm_data <- tbl_df(pm_data)
 yearly_emissions <- pm_data %>% group_by(year) %>% summarize(total = sum(Emissions))
 par(mar=c(4,4,2,0))
-png('plot1.png')
-with(yearly_emissions,barplot(total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue'))
+with(yearly_emissions,barplot(total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue',main='Emissions by Year Across the US'))
+dev.copy(png,file='plot1.png')
 dev.off()
 ```
 It looks like emissions have indeed decreased from 1999 to 2008, although there was a lull in the middle where 2002 and 2005 are about the same.  As a more fine-grained check, we can also see if it looks like most counties have had a decline across years.
@@ -63,8 +63,8 @@ Now we're going to focus our attention specifically on Baltimore.  Have emission
 ``` {r}
 BaltByYear <- pm_data %>% group_by(year,fips) %>% summarize(total = sum(Emissions)) %>% filter(fips=='24510')
 par(mar=c(4,4,2,0))
-png('plot2.png')
-barplot(BaltByYear$total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue')
+barplot(BaltByYear$total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue',main='Emissions by Year in Baltimore')
+dev.copy(png,file='plot2.png')
 dev.off()
 ```
 
@@ -82,3 +82,51 @@ dev.off()
 ```
 
 It looks like each type has declined overall except for point, which increased but then dropped back to about 1999 levels.
+
+## Question 4: How Has Coal Changed?
+Next up: how have emissions from coal sources changed over time, across the entire US?  This is a little tricky because we need to limit to certain sources, but the sources are somewhat heterogeneously named.  For example, in the class file, 'coal' can be labeled 'lignite' in certain levels.  It looks like the EI Sector column is most general and has 'coal' in the entry if coal is involved.  We'll use that with a grep to get the proper SCC code with which to subset the PM data.
+``` {r}
+coalEntries <- as.character(pm_class$SCC[grep("coal",pm_class$EI.Sector,ignore.case=TRUE)])
+coal <- pm_data %>% filter(SCC %in% coalEntries)
+```
+That should have done our sorting; it looks like not every source has occurred, but that could be the case.  Now let's remake our graph from before, limited to the coal sources.
+``` {r}
+coalByYear <- coal %>% group_by(year) %>% summarize(total = sum(Emissions))
+par(mar=c(4,4,2,0))
+barplot(coalByYear$total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue',main='Coal Emissions by Year Across the US')
+dev.copy(png,file='plot4.png')
+dev.off()
+```
+
+It looks like coal emissions have decreased, but almost entirely from 2005 to 2008.
+
+## Question 5: Motor Vehicles in Baltimore
+On the topic of specific sources, how have emissions from motor vehicles changed in Baltimore? It looks like the best class variable to sort by is the 'onroad' entry for Data.Category.
+``` {r}
+carEntries <- as.character(pm_class$SCC[pm_class$Data.Category=='Onroad'])
+balCars <- pm_data %>% filter(fips=='24510' & SCC %in% carEntries)
+carsByYear <- balCars %>% group_by(year) %>% summarize(total = sum(Emissions))
+par(mar=c(4,4,2,0))
+barplot(carsByYear$total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue',main='Onroad Emissions by Year in Baltimore')
+dev.copy(png,file='plot5.png')
+dev.off()
+```
+
+It looks like motor vehicle emissions, as indexed by the 'onroad' category, have dropped a fair amount since 1999.
+
+## Question 6: Baltimore vs. LA
+We can see the motor vehicle emissions for Baltimore have decreased, but how do they compare to someplace else?  How about LA?
+``` {r}
+balCars <- pm_data %>% filter(fips=='24510' & SCC %in% carEntries)
+laCars <- pm_data %>% filter(fips=='06037' & SCC %in% carEntries)
+balByYear <- balCars %>% group_by(year) %>% summarize(total = sum(Emissions)) %>% mutate(city=rep('Baltimore',dim(balByYear)[1]))
+laByYear <- laCars %>% group_by(year) %>% summarize(total = sum(Emissions)) %>% mutate(city=rep('LA',dim(laByYear)[1]))
+carsByYear2 <- bind_rows(balByYear,laByYear)
+par(mar=c(4,4,2,0))
+g <- ggplot(carsByYear2,aes(year,total,group=city,color=city))
+g+geom_line()+labs(x='Year',y='Total PM2.5 Emissions',title='Onroad Emissions in Baltimore vs. LA')
+dev.copy(png,file='plot6.png')
+dev.off()
+```
+
+It looks like LA has much more vehicle missions in general, and also has shown an increase with time while Baltimore's have decreased.  So things aren't necessarily getting better all over.
