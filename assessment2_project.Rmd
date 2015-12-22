@@ -112,15 +112,15 @@ dev.copy(png,file='plot5.png')
 dev.off()
 ```
 
-It looks like motor vehicle emissions, as indexed by the 'onroad' category, have dropped a fair amount since 1999.
+It looks like motor vehicle emissions, as indexed by the 'onroad' category, have dropped a fair amount since 1999, although most of it occurred in the 1999-2002 segment.
 
 ## Question 6: Baltimore vs. LA
 We can see the motor vehicle emissions for Baltimore have decreased, but how do they compare to someplace else?  How about LA?
 ``` {r}
 balCars <- pm_data %>% filter(fips=='24510' & SCC %in% carEntries)
 laCars <- pm_data %>% filter(fips=='06037' & SCC %in% carEntries)
-balByYear <- balCars %>% group_by(year) %>% summarize(total = sum(Emissions)) %>% mutate(city=rep('Baltimore',dim(balByYear)[1]))
-laByYear <- laCars %>% group_by(year) %>% summarize(total = sum(Emissions)) %>% mutate(city=rep('LA',dim(laByYear)[1]))
+balByYear <- balCars %>% group_by(year) %>% summarize(total = sum(Emissions)) %>% mutate(city=rep('Baltimore',4))
+laByYear <- laCars %>% group_by(year) %>% summarize(total = sum(Emissions)) %>% mutate(city=rep('LA',4))
 carsByYear2 <- bind_rows(balByYear,laByYear)
 par(mar=c(4,4,2,0))
 g <- ggplot(carsByYear2,aes(year,total,group=city,color=city))
