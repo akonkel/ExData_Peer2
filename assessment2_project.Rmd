@@ -42,15 +42,24 @@ emissionYearCounty <- pm_data %>% group_by(year,fips) %>% summarize(total = sum(
 g <- ggplot(emissionYearCounty,aes(as.factor(year),total,group=fips))
 g+geom_line()
 ```
+
 There's one obvious outlier; let's cut that out and focus on the majority of the data
 ``` {r}
 g+geom_line()+coord_cartesian(ylim=c(0,50000))+stat_smooth(method='lm',formula=y~x,se=FALSE)
 ```
+
 It's still pretty hard to see individual counties, although it seems believable that most show a decrease.  Let's just fit a model and check.
 ``` {r}
 options(scipen=1, digits=2)
 library(lme4)
-mod1 <- lmer(total ~ year + (year|fips),data=yearly_emissions)
+mod1 <- lmer(total ~ year + (year|fips),data=emissionYearCounty)
 fixedInt <- summary(mod1)$coef[,1][2]
+print(fixedInt)
 ```
-The general trend is for emissions to drop.
+Kind of a rubbish model, but it confirms that the general trend is for emissions to drop.
+
+## Question 2: Have Emissions Dropped in Baltimore?
+Now we're going to focus our attention specifically on Baltimore.  Have emissions dropped there?  We'll just redo the earlier code but limited to Baltimore.
+``` {r}
+BaltByYear <- pm_data %>% group_by(year,fips) %>% summarize(total = sum(Emissions)) %>% filter(fips=='24510')
+```
