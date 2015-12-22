@@ -6,3 +6,17 @@ output: html_document
 ---
 
 This markdown document will run all the analyses and produce the graphs asked for in the 2nd peer assessment in the John Hopkins Exploratory Data Analysis Coursera class.  The course asks you to copy the relevant code directly into a browser, which seems pretty silly for a data science series that also includes work on reproducible research and sharing data/analyses.  
+
+## Loading the Data
+First we need to download the data, unzip it, and load it.
+``` {r}
+fileName <- c("pm_data.zip")
+if(!file.exists(fileName)) {
+  download.file("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip", fileName)
+  message("... Unzipping archived source data ...")
+  unzip(fileName)
+} else {
+  message("... Source file already exists ...")
+}
+
+```
