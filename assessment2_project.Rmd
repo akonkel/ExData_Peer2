@@ -18,5 +18,11 @@ if(!file.exists(fileName)) {
 } else {
   message("... Source file already exists ...")
 }
-
+pm_data <- readRDS('summarySCC_PM25.rds')
+pm_class <- readRDS('Source_Classification_Code.rds')
 ```
+The data seems to load in with reasonable data classes, so we're good to go.
+
+## Question 1: Have Emissions Decreased?
+The first part of the assignment is to determine if total emissions from PM2.5 have decreased from 1999 to 2008.  As part of answering the question, we need to make a base graphics plot, saved as a PNG, that shows total emissions for 1999, 2002, 2005, and 2008.  
+
