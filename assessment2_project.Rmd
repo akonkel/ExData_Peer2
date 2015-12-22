@@ -26,3 +26,31 @@ The data seems to load in with reasonable data classes, so we're good to go.
 ## Question 1: Have Emissions Decreased?
 The first part of the assignment is to determine if total emissions from PM2.5 have decreased from 1999 to 2008.  As part of answering the question, we need to make a base graphics plot, saved as a PNG, that shows total emissions for 1999, 2002, 2005, and 2008.  
 
+``` {r}
+library(dplyr)
+pm_data <- tbl_df(pm_data)
+yearly_emissions <- pm_data %>% group_by(year) %>% summarize(total = sum(Emissions))
+par(mar=c(4,4,2,0))
+png('plot1.png')
+with(yearly_emissions,barplot(total,names.arg=c('1999','2002','2005','2008'),xlab='year',ylab='Total PM2.5 Emissions',col='lightblue'))
+dev.off()
+```
+It looks like emissions have indeed decreased from 1999 to 2008, although there was a lull in the middle where 2002 and 2005 are about the same.  As a more fine-grained check, we can also see if it looks like most counties have had a decline across years.
+``` {r}
+library(ggplot2)
+emissionYearCounty <- pm_data %>% group_by(year,fips) %>% summarize(total = sum(Emissions))
+g <- ggplot(emissionYearCounty,aes(as.factor(year),total,group=fips))
+g+geom_line()
+```
+There's one obvious outlier; let's cut that out and focus on the majority of the data
+``` {r}
+g+geom_line()+coord_cartesian(ylim=c(0,50000))+stat_smooth(method='lm',formula=y~x,se=FALSE)
+```
+It's still pretty hard to see individual counties, although it seems believable that most show a decrease.  Let's just fit a model and check.
+``` {r}
+options(scipen=1, digits=2)
+library(lme4)
+mod1 <- lmer(total ~ year + (year|fips),data=yearly_emissions)
+fixedInt <- summary(mod1)$coef[,1][2]
+```
+The general trend is for emissions to drop.
