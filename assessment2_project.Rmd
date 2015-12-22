@@ -1,0 +1,8 @@
+---
+title: "Exploratory Data Analysis Peer Assessment 2"
+author: "Alex Konkel"
+date: "December 22, 2015"
+output: html_document
+---
+
+This markdown document will run all the analyses and produce the graphs asked for in the 2nd peer assessment in the John Hopkins Exploratory Data Analysis Coursera class.  The course asks you to copy the relevant code directly into a browser, which seems pretty silly for a data science series that also includes work on reproducible research and sharing data/analyses.  
